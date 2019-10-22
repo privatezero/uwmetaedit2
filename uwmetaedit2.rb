@@ -22,7 +22,6 @@ unless File.exist?(configPath)
     "history2" => 'Encoding History Line 2',
     "collection" => 'Collection Number(s)'
   }
-  binding.pry
   File.open(configPath, "w") { |file| file.write(configBlank.to_yaml) }
 end
 
@@ -44,6 +43,28 @@ def getDerivDir()
   end
 end
 
+def embedBext(targetFile, origin, codeHist1, codeHist2, collNumber, itemNumber)
+  command = []
+  moddatetime = File.mtime(targetFile)
+  moddate = moddatetime.strftime("%Y-%m-%d")
+  modtime = moddatetime.strftime("%H:%M:%S")
+  history = codeHist1 + "\n" + codeHist2
+  description = "Collection number: #{collNumber}, " + "Item Number: #{itemNumber}, " + "Original File Name #{File.basename('/home/weaver/Desktop/test.wav',".*")}"
+  command << 'bwfmetaedit' 
+  command << '--reject-overwrite'
+  command << "--Originator=#{origin}"
+  command << "--Description=#{file_name}"
+  command << "-OriginatorReference=#{originatorreference}"
+  command << "--History=#{history}"
+  command << "--IARL=#{origin}"
+  command << "--OriginationDate=#{moddate}"
+  command << "--OriginationTime=#{modtime}"
+  command << '--MD5-Embed'
+  command << "#{targetFile}"
+  system(*command)
+end
+
+
 # Set up config variables
 originator = configOptions['originator']
 history1 = configOptions['history1']
@@ -63,7 +84,7 @@ else
   window.pane("Items").orientation = :horizontal
   window.pane("Items").puts("Item Info", replace:true)
   collNumber = window.pane("Items").input(collection, options = {value:collection})
-  window.pane("Items").input("Item Number")
+  itemNumber = window.pane("Items").input("Item Number")
   window.pane("Items").button("Save Settings") {
     configOptions['originator'] = origin.to_s
     configOptions['history1'] = codeHist1.to_s
@@ -72,4 +93,5 @@ else
     File.open(configPath, "w") { |file| file.write(configOptions.to_yaml) }
    }
   window.wait_until_closed
+  binding.pry
 end
