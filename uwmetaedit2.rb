@@ -16,13 +16,14 @@ end
 scriptPath = __dir__
 configPath = scriptPath + "/uw-metaedit-config.txt"
 unless File.exist?(configPath)
-  configOptions = {
-    originator: "",
-    history1: "",
-    history2: "",
-    collection: ""
+  configBlank = {
+    "originator" =>'Originator',
+    "history1" => 'Encoding History Line 1',
+    "history2" => 'Encoding History Line 2',
+    "collection" => 'Collection Number(s)'
   }
-  File.open(configPath, "w") { |file| file.write(configOptions.to_yaml) }
+  binding.pry
+  File.open(configPath, "w") { |file| file.write(configBlank.to_yaml) }
 end
 
  configOptions = YAML.load(File.read(configPath))
@@ -44,26 +45,10 @@ def getDerivDir()
 end
 
 # Set up config variables
-unless configOptions['originator'].nil?
-  originator = configOptions['originator']
-else
-  originator = 'Originator'
-end
-unless configOptions['history1'].nil?
-  history1 = configOptions['history1']
-else
-  history1 = 'Encoding History Line 1'
-end
-unless configOptions['history2'].nil?
-  history2 = configOptions['history2']
-else
-  history2 = 'Encoding History Line 2'
-end
-unless configOptions['collection'].nil?
-  collection = configOptions['collection']
-else
-  collection = 'Collection Number(s)'
-end
+originator = configOptions['originator']
+history1 = configOptions['history1']
+history2 = configOptions['history2']
+collection = configOptions['collection']
 
 if ARGV.length.positive?
   puts 'HELLO WORLD'
@@ -72,12 +57,19 @@ else
   window.image("")
   window.title("Welcome to UW Metaedit 2.0")
   window.pane("BEXT").puts("BEXT Info", replace:true)
-  window.pane("BEXT").input(originator)
-  window.pane("BEXT").input(history1)
-  window.pane("BEXT").input(history2)
+  origin = window.pane("BEXT").input(originator, options = {value:originator})
+  codeHist1 = window.pane("BEXT").input(history1, options = {value:history1})
+  codeHist2 = window.pane("BEXT").input(history2, options = {value:history2})
   window.pane("Items").orientation = :horizontal
   window.pane("Items").puts("Item Info", replace:true)
-  window.pane("Items").input(collection)
+  collNumber = window.pane("Items").input(collection, options = {value:collection})
   window.pane("Items").input("Item Number")
+  window.pane("Items").button("Save Settings") {
+    configOptions['originator'] = origin.to_s
+    configOptions['history1'] = codeHist1.to_s
+    configOptions['history2'] = codeHist2.to_s
+    configOptions['collection'] = collNumber.to_s
+    File.open(configPath, "w") { |file| file.write(configOptions.to_yaml) }
+   }
   window.wait_until_closed
 end
