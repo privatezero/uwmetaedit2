@@ -47,7 +47,7 @@ def embedBext(targetFile, origin, codeHist1, codeHist2, collNumber, itemNumber)
   command << 'bwfmetaedit' 
   command << '--reject-overwrite'
   command << "--Originator=#{origin}"
-  command << "--Description=Collection number: #{collNumber}, Item number #{itemNumber}"
+  command << "--Description=Collection number: #{collNumber}, Item number: #{itemNumber}"
   command << "--OriginatorReference=#{File.basename(targetFile)}"
   command << "--History=#{history}"
   command << "--IARL=#{origin}"
@@ -78,24 +78,25 @@ unless ARGV.length.positive?
   $window.pane("Items").puts("Item Info", replace:true)
   collNumber = $window.pane("Items").input('Collection Number(s)', options = {value:collection})
   itemNumber = $window.pane("Items").input('Item Number')
-  $window.pane("Items").button("Save Settings") {
+  $window.pane("BEXT").puts("BEXT Info", replace:true)
+  origin = $window.pane("BEXT").input('Originator', options = {value:originator})
+  codeHist1 = $window.pane("BEXT").input('Encoding History Line 1' , options = {value:history1})
+  codeHist2 = $window.pane("BEXT").input('Encoding History Line 2', options = {value:history2})
+    $window.pane("Controls").button("Save Settings") {
     configOptions['originator'] = origin.to_s
     configOptions['history1'] = codeHist1.to_s
     configOptions['history2'] = codeHist2.to_s
     configOptions['collection'] = collNumber.to_s
     File.open(configPath, "w") { |file| file.write(configOptions.to_yaml) }
    }
-  targetFile = $window.pane("Items").button('Select Target') { targetFile = getOutputDir() }
-  $window.pane("Items").button('Embed Metadata') { embedBext(targetFile, origin, codeHist1, codeHist2, collNumber, itemNumber) }
-  $window.pane("BEXT").puts("BEXT Info", replace:true)
-  origin = $window.pane("BEXT").input('Originator', options = {value:originator})
-  codeHist1 = $window.pane("BEXT").input('Encoding History Line 1' , options = {value:history1})
-  codeHist2 = $window.pane("BEXT").input('Encoding History Line 2', options = {value:history2})
+  $window.pane("Controls").orientation = :horizontal
+  targetFile = $window.pane("Controls").button('Select Target') { targetFile = getOutputDir() }
+  $window.pane("Controls").button('Embed Metadata') { embedBext(targetFile, origin, codeHist1, codeHist2, collNumber, itemNumber) }
   $window.wait_until_closed
 else
     Gui = false
     targetFile = ARGV[0]
     itemNumber = ARGV[1]
-    binding.pry
+    #binding.pry
     embedBext(targetFile, originator, history1, history2, collection, itemNumber)
 end
