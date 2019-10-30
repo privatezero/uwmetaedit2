@@ -4,6 +4,7 @@ require 'flammarion'
 require 'yaml'
 require 'mediainfo'
 require 'optparse'
+require 'pry'
 
 InputItemNumbers = []
 HuskyLinks = ['https://web.archive.org/web/20090820093233/http://geocities.com/aleharobed/siberian_husky_run_mini.gif',
@@ -53,7 +54,11 @@ def embedBext(targetFile, origin, codeHist1, codeHist2, collNumber, itemNumber)
   moddate = moddatetime.strftime("%Y-%m-%d")
   modtime = moddatetime.strftime("%H:%M:%S")
   history = codeHist1 + "\n" + codeHist2
-  description = "Collection number: #{collNumber}, " + "Item Number: #{itemNumber}, " + "Original File Name #{File.basename('/home/weaver/Desktop/test.wav',".*")}"
+  unless itemNumber.nil?
+    description = "Collection number: #{collNumber}, " + "Item Number: #{itemNumber}, " + "Original File Name #{File.basename('/home/weaver/Desktop/test.wav',".*")}"
+  else
+    description = "Collection number: #{collNumber}, " + "Item Number: #{itemNumber}, " + "Original File Name #{File.basename('/home/weaver/Desktop/test.wav',".*")}"
+  end
   command << 'bwfmetaedit' 
   command << '--reject-overwrite'
   command << "--Originator=#{origin}"
@@ -105,6 +110,10 @@ unless ARGV.length.positive?
   $window.wait_until_closed
 else
   Gui = false
+  if ARGV.length != InputItemNumbers.length && InputItemNumbers.length != 0
+    puts "Number of inputs does not match number of item numbers - please recheck your command."
+    exit
+  end
   ARGV.each do |targetFile|
     itemNumber = InputItemNumbers[ARGV.index(targetFile)]
     if File.exist?(targetFile)
