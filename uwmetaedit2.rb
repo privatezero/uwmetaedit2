@@ -3,7 +3,17 @@
 require 'flammarion'
 require 'yaml'
 require 'mediainfo'
-require 'pry'
+require 'optparse'
+
+InputItemNumbers = []
+HuskyLinks = ['https://web.archive.org/web/20090820093233/http://geocities.com/aleharobed/siberian_husky_run_mini.gif',
+'https://web.archive.org/web/20090829072442/http://www.geocities.com/sakiaakennelz/walkingsiberianhusky.gif',
+'https://web.archive.org/web/20091019155615/http://de.geocities.com/Mausezwerg1981/huskyspringend.gif']
+
+ARGV.options do |opts|
+  opts.on("-i", "--item-number=val", String)  { |val| InputItemNumbers << val }
+  opts.parse!
+end
 
 # Check for $windows
 if Gem.win_platform?
@@ -72,7 +82,7 @@ collection = configOptions['collection']
 unless ARGV.length.positive?
   Gui = true
   $window = Flammarion::Engraving.new
-  $window.image("")
+  $window.image(HuskyLinks.sample)
   $window.title("Welcome to UW Metaedit 2.0")
   $window.pane("Items").orientation = :horizontal
   $window.pane("Items").puts("Item Info", replace:true)
@@ -94,9 +104,13 @@ unless ARGV.length.positive?
   $window.pane("Controls").button('Embed Metadata') { embedBext(targetFile, origin, codeHist1, codeHist2, collNumber, itemNumber) }
   $window.wait_until_closed
 else
-    Gui = false
-    targetFile = ARGV[0]
-    itemNumber = ARGV[1]
-    #binding.pry
-    embedBext(targetFile, originator, history1, history2, collection, itemNumber)
+  Gui = false
+  ARGV.each do |targetFile|
+    itemNumber = InputItemNumbers[ARGV.index(targetFile)]
+    if File.exist?(targetFile)
+      embedBext(targetFile, originator, history1, history2, collection, itemNumber)
+    else
+      puts "File not found: Skipping #{targetFile}"
+    end
+  end
 end
